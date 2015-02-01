@@ -27,9 +27,13 @@ git log主要用来显示分支中提交更改的记录。当执行git commit以
 
 git log --oneline，可以显示更加短小的提交ID.
 
-git log --graph，显示何时出现了分支和合并等信息.
+git log --graph，显示何时出现了分支和合并等信息,也就是图形显示
 
 git log --pretty=raw，显示提交对象的parent属性.
+
+git log erlang ^master，查看只在erlang分支里的修改
+
+git log --grep, 正则取一个log
 
 ### git config
 
@@ -99,6 +103,8 @@ git add -i，交互式的方式进行添加。
 
 git commit --amend，修补式提交。
 
+![git commit --amend](./commit-amend.svg "git commit --amend")
+
 git commit --a，对本地所有变更的文件执行提交操作，包括对本地修改的文件和删除的文件，但是不包括未被版本库跟踪的文件。但是这个命令最好不要使用，这样会丢掉Git暂存区带给用户的最大好处：对提交内容进行控制的能力
 
 git commit --allow-empty，允许执行空白提交
@@ -117,7 +123,12 @@ git reset，等同于git reset HEAD，用HEAD指向的目录树重置暂存区
 
 git reset -- filename，将文件filename的改动撤出暂存区，暂存区其他文件不变
 
-git reset HEAD --filename 等同于git reset -- filename
+git reset HEAD --filename 等同于git reset -- filename, 比如之前有add filename，此命令操作之后，filename将处于未被add的状态，也就是从index转变为working状态
+
+reset的三个选项在此做一重复说明：
+* --hard， 回退版本，代码也回退，忽略所有修改
+* --soft， 回退版本，代码不变，回退所有的add操作
+* --mixed， 回退版本，代码不变，保留add操作
 
 ### git branch
 
@@ -133,7 +144,21 @@ git branch -D <branchname>，强制删除分支<branchname>
 
 git branch -m <oldbranch> <newbranch>，重命名分支
 
+git branch -r , 查看远程分支
+
+git checkout [branchName]， 切换分支
+
+git checkout -b [branchName], 创建新分支并立即切换到新分支
+
+git merge [branchName], 将名称为branchName的分支与当前分支合并
+
+git push origin [branchName], 创建远程分支（本地分支push到远程）
+
+git push origin : [branchName], 删除远程分支branchName
+
 ### git checkout
+
+checkout命令用于从历史提交（或者暂存区域）中拷贝文件到工作目录，也可用于切换分支
 
 git checkout branchname，会改变HEAD头指针，主要用于切换分支
 
@@ -144,6 +169,29 @@ git checkout --filename，用暂存区中的filename文件来覆盖工作区中�
 git checkout <commit> --filename，用指定提交中的文件覆盖暂存区和工作区中对应的文件
 
 git checkout -- .或者git checkout .，用暂存区的所有文件直接覆盖本地文件，取消所有的本地的修改，是一条危险的操作
+
+![图解工作目录、暂存区、仓库的关系](./basic-usage.svg "图解工作目录、暂存区、仓库的关系")
+
+看一个git checkout HEAD~ files的图例：
+![git checkout HEAD~ files图例](./checkout-files.svg "git checkout HEAD~ files图例")
+
+如果既没有指定文件名，也没有指定分支名，而是一个标签、远程分支、SHA-1值或者是像master~3类似的东西，就得到一个匿名分支，称作detached HEAD（被分离的HEAD标识）。这样可以很方便地在历史版本之间互相切换。比如说你想要编译1.6.6.1版本的git，你可以运行git checkout v1.6.6.1（这是一个标签，而非分支名），编译，安装，然后切换回另一个分支，比如说git checkout master。然而，当提交操作涉及到“分离的HEAD”时，其行为会略有不同
+
+![git checkout master~3](./checkout-detached.svg "git checkout master~3")
+
+#### HEAD标识处于分离状态时的提交操作
+
+当HEAD处于分离状态（不依附于任一分支）时，提交操作可以正常进行，但是不会更新任何已命名的分支。(你可以认为这是在更新一个匿名分支。)
+
+![git commit](./commit-detached.svg "git commit")
+
+一旦此后你切换到别的分支，比如说master，那么这个提交节点（可能）再也不会被引用到，然后就会被丢弃掉了。注意这个命令之后就不会有东西引用2eecb。
+
+![git checkout master](./checkout-after-detached.svg)
+
+但是，如果你想保存这个状态，可以用命令git checkout -b name来创建一个新的分支。
+
+![git checkout -b new](./checkout-b-detached.svg)
 
 ### git clean
 
@@ -158,6 +206,8 @@ git clean -fd，强制删除多余的文件和目录
 rm命令删除的文件只是在本地进行了删除，尚未添加到暂存区，也就是说，直接在工作区删除，对暂存区和版本库没有任何影响。
 
 git rm命令会将删除动作加入暂存区，这是执行提交动作，就从真正意义上执行了文件删除。
+
+git rm file --cached，只从暂存区移除，保存本地的文件
 
 ### git mv
 
@@ -187,6 +237,73 @@ git clone --mirror <repository> <directory.git>
 
 git push <remote> [branch]，就会将你的 [branch] 分支推送成为 [alias] 远端上的 [branch] 分支，要推送的远程版本号的URL地址由remote.<remote>.pushurl给出，如果没有配置，则使用 remote.<remote>.url配置的URL地址。
 
+如果想把本地的某个分支test提交到远程仓库，并作为远程仓库的master分支，或者作为另外一个名叫test的分支，如下：
+
+$git push origin test:master // 提交本地test分支作为远程的master分支 
+
+$git push origin test:test // 提交本地test分支作为远程的test分支
+
 ### git pull
 
 git pull，从远端的服务器上下载数据，从而实现同步更新。要获取的远程版本库的URL地址由remote.<remote>.url提供。
+
+### git stash
+
+将当前未提交的工作存入Git工作栈中，时机成熟的时候再应用回来
+
+git stash clear, 清空stash堆栈
+
+### git tag
+
+git tag , 查看标签
+
+git tag [name], 创建标签
+
+git tag -d [name], 删除标签
+
+git tag -r, 查看远程标签
+
+git push origin [tagname] ,创建远程标签(本地push到远程)
+
+git push origin :refs/tags/[name]， 删除远程标签
+
+git pull origin --tags ，合并远程的标签到本地
+
+git push origin --tags，上传本地tag到远程仓库
+
+git tag -a [name] -m 'your message', 创建带注释的tag
+
+### 子模块相关操作命令
+
+$ git submodule add [url] [path], 添加子模块, 如：
+$ git submodule add git://github.com/soberh/ui-libs.git src/main/webapp/ui-libs
+
+初始化子模块：$ git submodule init —-只在首次检出仓库时运行一次就行 
+
+更新子模块：$ git submodule update —-每次更新或切换分支后都需要运行一下
+
+删除子模块：（分4步走哦） 
+
+* $ git rm –cached [path] 
+* 编辑“.gitmodules”文件，将子模块的相关配置节点删除掉 
+* 编辑“ .git/config”文件，将子模块的相关配置节点删除掉 
+* 手动删除子模块残留的目录
+
+### cherry-pick
+
+cherry-pick命令“复制”一个提交节点并在当前分支做一次完全一样的新提交
+
+![git cherry-pick 2c33a](./cherry-pick.svg)
+
+### rebase
+
+衍合是合并命令的另一种选择。合并把两个父分支合并进行一次提交，提交历史不是线性的。衍合在当前分支上重演另一个分支的历史，提交历史是线性的。本质上，这是线性化的自动的 cherry-pick
+
+![git rebase master](./rebase.svg)
+
+上面的命令都在topic分支中进行，而不是master分支，在master分支上重演，并且把分支指向新的节点。注意旧提交没有被引用，将被回收。
+
+要限制回滚范围，使用--onto选项。下面的命令在master分支上重演当前分支从169a6以来的最近几个提交，即2c33a。
+
+![git rebase --onto master 169a6](./rebase-onto.svg)
+
