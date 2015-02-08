@@ -103,7 +103,7 @@ git add -i，交互式的方式进行添加。
 
 git commit --amend，修补式提交。
 
-![git commit --amend](./commit-amend.svg "git commit --amend")
+![git commit --amend](./commit-amend.svg.png "git commit --amend")
 
 git commit --a，对本地所有变更的文件执行提交操作，包括对本地修改的文件和删除的文件，但是不包括未被版本库跟踪的文件。但是这个命令最好不要使用，这样会丢掉Git暂存区带给用户的最大好处：对提交内容进行控制的能力
 
@@ -170,28 +170,28 @@ git checkout <commit> --filename，用指定提交中的文件覆盖暂存区和
 
 git checkout -- .或者git checkout .，用暂存区的所有文件直接覆盖本地文件，取消所有的本地的修改，是一条危险的操作
 
-![图解工作目录、暂存区、仓库的关系](./basic-usage.svg "图解工作目录、暂存区、仓库的关系")
+![图解工作目录、暂存区、仓库的关系](./basic-usage.svg.png "图解工作目录、暂存区、仓库的关系")
 
 看一个git checkout HEAD~ files的图例：
-![git checkout HEAD~ files图例](./checkout-files.svg "git checkout HEAD~ files图例")
+![git checkout HEAD~ files图例](./checkout-files.svg.png "git checkout HEAD~ files图例")
 
 如果既没有指定文件名，也没有指定分支名，而是一个标签、远程分支、SHA-1值或者是像master~3类似的东西，就得到一个匿名分支，称作detached HEAD（被分离的HEAD标识）。这样可以很方便地在历史版本之间互相切换。比如说你想要编译1.6.6.1版本的git，你可以运行git checkout v1.6.6.1（这是一个标签，而非分支名），编译，安装，然后切换回另一个分支，比如说git checkout master。然而，当提交操作涉及到“分离的HEAD”时，其行为会略有不同
 
-![git checkout master~3](./checkout-detached.svg "git checkout master~3")
+![git checkout master~3](./checkout-detached.svg.png "git checkout master~3")
 
 #### HEAD标识处于分离状态时的提交操作
 
 当HEAD处于分离状态（不依附于任一分支）时，提交操作可以正常进行，但是不会更新任何已命名的分支。(你可以认为这是在更新一个匿名分支。)
 
-![git commit](./commit-detached.svg "git commit")
+![git commit](./commit-detached.svg.png "git commit")
 
 一旦此后你切换到别的分支，比如说master，那么这个提交节点（可能）再也不会被引用到，然后就会被丢弃掉了。注意这个命令之后就不会有东西引用2eecb。
 
-![git checkout master](./checkout-after-detached.svg)
+![git checkout master](./checkout-after-detached.svg.png)
 
 但是，如果你想保存这个状态，可以用命令git checkout -b name来创建一个新的分支。
 
-![git checkout -b new](./checkout-b-detached.svg)
+![git checkout -b new](./checkout-b-detached.svg.png)
 
 ### git clean
 
@@ -293,17 +293,63 @@ $ git submodule add git://github.com/soberh/ui-libs.git src/main/webapp/ui-libs
 
 cherry-pick命令“复制”一个提交节点并在当前分支做一次完全一样的新提交
 
-![git cherry-pick 2c33a](./cherry-pick.svg)
+![git cherry-pick 2c33a](./cherry-pick.svg.png)
 
 ### rebase
 
 衍合是合并命令的另一种选择。合并把两个父分支合并进行一次提交，提交历史不是线性的。衍合在当前分支上重演另一个分支的历史，提交历史是线性的。本质上，这是线性化的自动的 cherry-pick
 
-![git rebase master](./rebase.svg)
+![git rebase master](./rebase.svg.png)
 
 上面的命令都在topic分支中进行，而不是master分支，在master分支上重演，并且把分支指向新的节点。注意旧提交没有被引用，将被回收。
 
 要限制回滚范围，使用--onto选项。下面的命令在master分支上重演当前分支从169a6以来的最近几个提交，即2c33a。
 
-![git rebase --onto master 169a6](./rebase-onto.svg)
+![git rebase --onto master 169a6](./rebase-onto.svg.png)
+
+### git revert 撤销历史提交
+
+git revert commit_ID
+
+### format-patch
+
+git format-patch [commitId], 某次提交以后的所有patch
+
+git format-patch [commitId1]..[commitId2], 某两次提交之间的所有patch
+
+git format-patch -M master, 当前分支所有超前master的提交patch
+
+git format-patch -n 07fe, --n指patch数，07fe对应提交的名称，表示某次提交（含）之前的几次提交的patch
+
+git format-patch master, 把分支与master比较差异并生成patch，生成目录为执行命令目录
+
+git apply --stat newpatch.patch, 检查patch文件
+
+git apply --check newpatch.patch , 检查能否应用成功
+
+git am newpatch.patch, 应用补丁
+
+git am 文件夹路径/*.patch, git 会根据patch顺序合并代码，合并patch时若发生冲突则暂停，需手动解决
+
+git am打补丁失败之后可能会报错大概如下：
+
+```
+    $ git am PATCH
+    Applying: PACTH DESCRIPTION
+    error: patch failed: file.c:137
+    error: file.c: patch does not apply
+    error: patch failed: Makefile:24
+    error: libavfilter/Makefile: patch does not apply
+    Patch failed at 0001 PATCH DESCRIPTION
+    When you have resolved this problem run "git am --resolved".
+    If you would prefer to skip this patch, instead run "git am --skip".
+    To restore the original branch and stop patching run "git am --abort".
+```
+以上是因为发生了冲突，git输出上述信息后就会停下来，一个小冲突会导致整个patch都不会被集成
+
+处理这种问题最简单的方式是：
+
+* git apply --reject path.patch, 先合并没有产生冲突的文件，根据同目录下的*.rej文件找出冲突的地方
+* git add ***, 把本次patch改动的文件添加进缓存
+* git am --resolved, 恢复patch的合并，如果没有再提示就合并patch成功
 
