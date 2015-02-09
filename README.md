@@ -418,3 +418,19 @@ git remote set-head origin master, 设置远程仓库的HEAD指向master分支
     git branch --set-upstream master origin/master
     git branch --set-upstream develop origin/develop
 ```
+
+## webhooks进行网站自动化部署
+
+自动化部署可以做到有新的commit push到master分支的时候，就自动在测试/生产服务器上进行git pull拉取最新代码等操作。git的webhooks可以满足此需求
+
+[自动化部署之前的操作过程](./beforeAutoBuild.png)
+
+[使用webhooks自动化部署之后的操作流程](./githooksAutoBuild.png)
+
+[git提供的使用说明](https://help.github.com/articles/about-webhooks/)
+
+<!--
+利用webhooks步骤：http://www.cnblogs.com/daishuguang/p/3925984.html
+
+http://www.lovelucy.info/auto-deploy-website-by-webhooks-of-github-and-gitlab.html#more-2148
+-->
