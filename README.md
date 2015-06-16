@@ -31,9 +31,33 @@ git log --graph，显示何时出现了分支和合并等信息,也就是图形�
 
 git log --pretty=raw，显示提交对象的parent属性.
 
+```php
+$ git log --pretty=oneline filename //每个文件的提交历史
+```
+
 git log erlang ^master，查看只在erlang分支里的修改
 
-git log --grep, 正则取一个log
+git log --grep, 正则根据提交注释过滤提交记录
+
+```
+$ git log --grep=P4EDITOR --no-merges
+```
+
+git log -p filename，查看特定文件的详细提交记录
+
+git log --author， 只寻找某个特定作者的提交
+
+```
+$ git log --author=Linus --oneline -5
+```
+
+git log --since --before, 根据日期过滤提交记录
+
+```
+$ git log --oneline --before={3.weeks.ago} --after={2010-04-18} --no-merges
+```
+
+git blame [filename], 查看文件的每个部分是谁修改的
 
 ### git config
 
@@ -307,7 +331,7 @@ cherry-pick命令“复制”一个提交节点并在当前分支做一次完全
 
 ![git rebase --onto master 169a6](./rebase-onto.svg.png)
 
-### git revert 撤销历史提交
+### git revert 撤销历史提交,也就是说恢复历史提交状态，恢复动作本身也创建了一次提交对象
 
 git revert commit_ID
 
