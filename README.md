@@ -170,9 +170,21 @@ git branch -m <oldbranch> <newbranch>，重命名分支
 
 git branch -r , 查看远程分支
 
+git branch -v, 查看各个分支最后提交信息
+
+git branch --merged, 查看已经被合并到当前分支的分支
+
+git branch --no-merged, 查看尚未被合并到当前分支的分支
+
 git checkout [branchName]， 切换分支
 
 git checkout -b [branchName], 创建新分支并立即切换到新分支
+
+git checkout -b [分支名] [远程名]/[分支名], 建立本地分支并与远程分支关联
+
+git checkout --track origin/serverfix, 建立本地分支serverfix并与远程分支serverfix关联
+
+> Branch serverfix set up to track remote branch serverfix from origin.Switched to a new branch 'serverfix'
 
 git merge [branchName], 将名称为branchName的分支与当前分支合并
 
@@ -216,6 +228,10 @@ git checkout -- .或者git checkout .，用暂存区的所有文件直接覆盖�
 但是，如果你想保存这个状态，可以用命令git checkout -b name来创建一个新的分支。
 
 ![git checkout -b new](./checkout-b-detached.svg.png)
+
+git checkout $id, 把某次历史提交记录checkout出来，但无分支信息，切换到其他分支会自动删除
+
+git checkout $id -b <new_branch>, 把某次历史提交记录checkout出来，创建成一个分支
 
 ### git clean
 
@@ -277,6 +293,12 @@ git pull，从远端的服务器上下载数据，从而实现同步更新。要
 
 git stash clear, 清空stash堆栈
 
+git stash list, 列所有stash
+
+git stash apply, 恢复暂存的内容
+
+git stash drop, 删除暂存区
+
 ### git tag
 
 git tag , 查看标签
@@ -331,7 +353,25 @@ cherry-pick命令“复制”一个提交节点并在当前分支做一次完全
 
 ![git rebase --onto master 169a6](./rebase-onto.svg.png)
 
+<<<<<<< HEAD
 ### git revert 撤销历史提交,也就是说恢复历史提交状态，恢复动作本身也创建了一次提交对象
+=======
+git merge origin/master --no-ff, 不要Fast-Foward合并，这样可以生成merge提交
+
+git rebase master <branch>, 将master rebase到branch，相当于：
+
+> git co <branch> && git rebase master && git co master && git merge <branch>
+
+### Git补丁管理
+
+git diff > ../sync.patch, 生成补丁
+
+git apply ../sync.patch, 打补丁
+
+git apply --check ../sync.patch, 测试补丁能否成功
+
+### git revert 撤销历史提交
+>>>>>>> eb51bd75e19afd41ee3777d8cb33b2955cc4a336
 
 git revert commit_ID
 
@@ -377,3 +417,48 @@ git am打补丁失败之后可能会报错大概如下：
 * git add ***, 把本次patch改动的文件添加进缓存
 * git am --resolved, 恢复patch的合并，如果没有再提示就合并patch成功
 
+### Git远程仓库管理
+
+git remote -v, 查看远程服务器地址和仓库名称
+
+git remote show origin, 查看远程服务器仓库状态
+
+git remote add origin git@github:robbin/robbin_site.git, 添加远程仓库地址
+
+git remote set-url origin git@github.com:robbin/robbin_site.git, 设置远程仓库地址(用于修改远程仓库地址)
+
+git remote rm <repository>, 删除远程仓库
+
+### 创建远程仓库
+
+git clone --bare robbin_site robbin_site.git, 用带版本的项目创建纯版本仓库
+
+scp -r my_project.git git@git.csdn.net:~, 将纯仓库上传到服务器上
+
+mkdir robbin_site.git && cd robbin_site.git && git --bare init, 在服务器创建纯仓库
+
+git push -u origin develop, 首次将本地develop分支提交到远程develop分支，并且track
+
+git remote set-head origin master, 设置远程仓库的HEAD指向master分支
+
+也可以命令设置跟踪远程库和本地库
+```
+    git branch --set-upstream master origin/master
+    git branch --set-upstream develop origin/develop
+```
+
+## webhooks进行网站自动化部署
+
+自动化部署可以做到有新的commit push到master分支的时候，就自动在测试/生产服务器上进行git pull拉取最新代码等操作。git的webhooks可以满足此需求
+
+[自动化部署之前的操作过程](./beforeAutoBuild.png)
+
+[使用webhooks自动化部署之后的操作流程](./githooksAutoBuild.png)
+
+[git提供的使用说明](https://help.github.com/articles/about-webhooks/)
+
+<!--
+利用webhooks步骤：http://www.cnblogs.com/daishuguang/p/3925984.html
+
+http://www.lovelucy.info/auto-deploy-website-by-webhooks-of-github-and-gitlab.html#more-2148
+-->
