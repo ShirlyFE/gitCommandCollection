@@ -269,10 +269,10 @@ git clone <repository> <directory>，将repository指向的版本库创建一个
 
 git clone --bare \<repository\> \<directory.git\>
 
-git clone --mirror <repository> <directory.git>
+git clone --mirror \<repository\> \<directory.git\>
 
 只克隆特定分支：
-> git clone -b <branch name> <remote repository>
+> git clone -b \<branch name\> \<remote repository\>
 
 上面的两种克隆版本都不包含工作区，直接就是版本库的内容，这样的版本库称为裸版本库。
 
