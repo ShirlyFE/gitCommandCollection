@@ -267,7 +267,7 @@ git archive --format=tar --prefix=1.0/ v1.0 | gzip > foo-1.0.tar.gz，基于里�
 
 git clone <repository> <directory>，将repository指向的版本库创建一个克隆到directory目录中。目录directory相当于克隆版 本库的工作区，文件都会检出，版本库位于工作区下得.git目录中。
 
-git clone --bare <repository> <directory.git>
+git clone --bare \<repository\> \<directory.git\>
 
 git clone --mirror <repository> <directory.git>
 
